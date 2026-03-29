@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Book a Test — City Lab Durgapur</title>
+  <meta name="description"
+    content="Book a diagnostic test appointment at City Lab Durgapur. Select your date and time slot." />
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    .book-layout {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 32px 5% 80px;
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 32px;
+      align-items: start;
+    }
+
+    /* Test summary sidebar */
+    .test-summary-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      position: sticky;
+      top: calc(var(--nav-height) + 20px);
+    }
+
+    .test-summary-card .ts-icon {
+      width: 56px;
+      height: 56px;
+      background: var(--teal-light);
+      border: 1px solid rgba(0, 201, 177, 0.2);
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      margin-bottom: 16px;
+    }
+
+    .test-summary-card h3 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .ts-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin: 16px 0;
+    }
+
+    .ts-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+    }
+
+    .ts-row .icon {
+      font-size: 1rem;
+      width: 20px;
+      text-align: center;
+    }
+
+    /* Booking form */
+    .book-form {
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    .step-label {
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--teal);
+      margin-bottom: 12px;
+    }
+
+    /* Slots grid */
+    .slots-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+
+    .slots-loading {
+      grid-column: 1/-1;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+
+    .slots-tip {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 10px;
+    }
+
+    .legend {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 14px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    .legend-dot.available {
+      background: var(--teal);
+    }
+
+    .legend-dot.booked {
+      background: var(--text-muted);
+    }
+
+    .legend-dot.selected {
+      background: var(--teal);
+      box-shadow: 0 0 0 2px rgba(0, 201, 177, 0.4);
+    }
+
+    /* Confirm section */
+    .confirm-box {
+      background: rgba(0, 201, 177, 0.05);
+      border: 1px solid rgba(0, 201, 177, 0.2);
+      border-radius: var(--radius-md);
+      padding: 18px;
+      font-size: 0.85rem;
+      display: none;
+    }
+
+    .confirm-box.show {
+      display: block;
+    }
+
+    .confirm-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .confirm-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .confirm-row .label {
+      color: var(--text-muted);
+    }
+
+    .confirm-row .value {
+      font-weight: 600;
+    }
+
+    /* Success overlay */
+    .success-overlay {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 60px 24px;
+      background: var(--bg-card);
+      border: 1px solid rgba(0, 201, 177, 0.2);
+      border-radius: var(--radius-xl);
+    }
+
+    .success-overlay.show {
+      display: flex;
+    }
+
+    .success-icon {
+      width: 80px;
+      height: 80px;
+      background: rgba(16, 185, 129, 0.15);
+      border: 2px solid rgba(16, 185, 129, 0.4);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.5rem;
+      margin-bottom: 24px;
+    }
+
+    .success-overlay h2 {
+      font-size: 1.5rem;
+      font-weight: 800;
+      margin-bottom: 10px;
+    }
+
+    .success-overlay p {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      max-width: 340px;
+      margin-bottom: 28px;
+    }
+
+    @media (max-width: 768px) {
+      .book-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .test-summary-card {
+        position: static;
+        order: -1;
+      }
+
+      .slots-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    @media (max-width: 480px) {
+      .slots-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <header class="navbar">
+    <a href="index.html" class="logo">
+      <div class="logo-icon">🧪</div>
+      City <span>Lab</span>
+    </a>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="tests.html">Tests</a>
+      <a href="dashboard.html">My Bookings</a>
+      <a href="admin.html" id="nav-admin" style="display:none">Admin</a>
+      <span id="nav-username"
+        style="color:var(--text-secondary);font-size:0.875rem;font-weight:500;padding:8px 4px;"></span>
+      <a href="login.html" id="nav-login">Login</a>
+      <a href="register.html" id="nav-register" class="nav-cta">Register</a>
+      <a href="#" id="nav-logout" class="btn btn-ghost btn-sm" style="display:none">Logout</a>
+    </nav>
+  </header>
+
+  <div class="page-header">
+    <div style="max-width:900px;margin:0 auto;">
+      <h1>Book Your Test</h1>
+      <p>Select a date and available time slot at City Lab, Durgapur.</p>
+    </div>
+  </div>
+
+  <div class="book-layout">
+    <!-- Main form -->
+    <div>
+      <div id="success-overlay" class="success-overlay">
+        <div class="success-icon">✓</div>
+        <h2>Booking Confirmed!</h2>
+        <p>Your appointment has been booked. Please arrive 5 minutes before your slot. Bring this confirmation to the
+          lab.</p>
+        <div class="confirm-box show" id="success-details" style="width:100%;margin-bottom:24px;"></div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;">
+          <a href="dashboard.html" class="btn btn-primary">View My Bookings</a>
+          <a href="tests.html" class="btn btn-ghost">Book Another Test</a>
+        </div>
+      </div>
+
+      <form class="book-form" id="book-form">
+        <!-- Step 1: Date -->
+        <div>
+          <div class="step-label">Step 1 — Choose Date</div>
+          <div class="form-group">
+            <label class="form-label" for="date-picker">Appointment Date</label>
+            <input class="form-input" type="date" id="date-picker" required />
+          </div>
+        </div>
+
+        <!-- Step 2: Slots -->
+        <div>
+          <div class="step-label">Step 2 — Select Time Slot</div>
+          <div class="legend">
+            <div class="legend-item">
+              <div class="legend-dot available"></div> Available
+            </div>
+            <div class="legend-item">
+              <div class="legend-dot booked"></div> Booked
+            </div>
+          </div>
+          <div class="slots-grid" id="slots-grid">
+            <p style="color:var(--text-muted);font-size:0.85rem;grid-column:1/-1;">Pick a date above to see available
+              slots.</p>
+          </div>
+          <p class="slots-tip">⏱ Each appointment slot is 30 minutes. Open 9:00 AM – 7:00 PM.</p>
+        </div>
+
+        <!-- Step 3: Confirm -->
+        <div>
+          <div class="step-label">Step 3 — Confirm Booking</div>
+          <div class="confirm-box" id="confirm-box">
+            <div class="confirm-row"><span class="label">Test</span><span class="value" id="cf-test">—</span></div>
+            <div class="confirm-row"><span class="label">Date</span><span class="value" id="cf-date">—</span></div>
+            <div class="confirm-row"><span class="label">Time</span><span class="value" id="cf-time">—</span></div>
+            <div class="confirm-row"><span class="label">Price</span><span class="value text-teal"
+                id="cf-price">—</span></div>
+          </div>
+          <button type="submit" class="btn btn-primary btn-lg w-full" id="book-btn" disabled style="margin-top:16px;">
+            Confirm Booking
+          </button>
+          <p style="font-size:0.75rem;color:var(--text-muted);margin-top:10px;text-align:center;">
+            Note: Prices are indicative. Actual charges may vary slightly.
+          </p>
+        </div>
+      </form>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="test-summary-card" id="test-info">
+      <div class="ts-icon" id="ts-icon">🔬</div>
+      <div class="test-cat-tag" id="ts-cat"
+        style="display:inline-flex;align-items:center;padding:4px 10px;background:var(--teal-light);color:var(--teal);font-size:0.72rem;font-weight:700;border-radius:99px;margin-bottom:10px;">
+        —</div>
+      <h3 id="ts-name">Loading…</h3>
+      <div class="ts-meta">
+        <div class="ts-row"><span class="icon">💰</span><span>Starting from <strong id="ts-price"
+              class="text-teal">—</strong></span></div>
+        <div class="ts-row"><span class="icon">📍</span><span>City Lab, Station Road, Durgapur</span></div>
+        <div class="ts-row"><span class="icon">🕐</span><span>Open 9:00 AM – 10:00 PM</span></div>
+        <div class="ts-row"><span class="icon">⏱</span><span>Slot duration: 30 minutes</span></div>
+      </div>
+      <hr class="divider" style="margin:16px 0;" />
+      <div style="font-size:0.8rem;color:var(--text-muted);line-height:1.7;">
+        📞 Show number at the lab upon arrival.<br />
+        📋 Fasting may be required for some blood tests.
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { api, initNavAuth, isLoggedIn, showToast, formatDate, formatSlot, getToken } from "./js/api.js";
+
+    // Redirect to login if not authenticated
+    if (!isLoggedIn()) {
+      showToast("Please login to book a test", "info");
+      setTimeout(() => window.location.href = `login.html`, 800);
+    }
+
+    initNavAuth();
+
+    const params = new URLSearchParams(location.search);
+    const testId = params.get("testId");
+    const testName = params.get("name") || "Lab Test";
+    const testPrice = params.get("price") || "—";
+    const testCat = params.get("cat") || "";
+
+    const CAT_ICONS = {
+      "Blood Test": "🩸", "Stool Test": "🔬", "Urine Test": "💧",
+      "Plasma Test": "🧪", "Swab Test": "🩹", "Medical Testing": "❤️",
+    };
+
+    // Populate sidebar
+    document.getElementById("ts-name").textContent = testName;
+    document.getElementById("ts-price").textContent = `₹${testPrice}`;
+    document.getElementById("ts-cat").textContent = testCat;
+    document.getElementById("ts-icon").textContent = CAT_ICONS[testCat] || "🔬";
+
+    // Set min date to today
+    const today = new Date().toISOString().split("T")[0];
+    const datePicker = document.getElementById("date-picker");
+    datePicker.min = today;
+    datePicker.value = today;
+
+    let selectedSlot = null;
+
+    datePicker.addEventListener("change", loadSlots);
+
+    async function loadSlots() {
+      const date = datePicker.value;
+      if (!date || !testId) return;
+      selectedSlot = null;
+      updateConfirm();
+      const grid = document.getElementById("slots-grid");
+      grid.innerHTML = `<div class="slots-loading"><div class="spinner" style="width:20px;height:20px;border-width:2px;"></div> Loading slots…</div>`;
+
+      try {
+        const data = await api.get(`/bookings/slots?testId=${testId}&date=${date}`);
+        renderSlots(data.allSlots, data.bookedSlots);
+      } catch {
+        grid.innerHTML = `<p style="color:var(--danger);font-size:0.85rem;grid-column:1/-1;">Failed to load slots. Please try again.</p>`;
+      }
+    }
+
+    function renderSlots(all, booked) {
+      const grid = document.getElementById("slots-grid");
+      grid.innerHTML = all.map(slot => {
+        const isBooked = booked.includes(slot);
+        const [start] = slot.split("-");
+        const [h, m] = start.split(":").map(Number);
+        const ampm = h >= 12 ? "PM" : "AM";
+        const hr = h > 12 ? h - 12 : h === 0 ? 12 : h;
+        const label = `${hr}:${String(m).padStart(2, "0")} ${ampm}`;
+        return `<div class="slot-chip ${isBooked ? "booked" : "available"}"
+                   data-slot="${slot}"
+                   ${isBooked ? 'title="Already booked"' : ""}>${label}</div>`;
+      }).join("");
+
+      grid.querySelectorAll(".slot-chip.available").forEach(chip => {
+        chip.addEventListener("click", () => {
+          grid.querySelectorAll(".slot-chip").forEach(c => c.classList.remove("selected"));
+          chip.classList.add("selected");
+          selectedSlot = chip.dataset.slot;
+          updateConfirm();
+        });
+      });
+    }
+
+    function updateConfirm() {
+      const box = document.getElementById("confirm-box");
+      const btn = document.getElementById("book-btn");
+      const date = datePicker.value;
+
+      if (selectedSlot && date) {
+        const d = new Date(date);
+        const dateStr = d.toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+        const [start, end] = selectedSlot.split("-");
+        const fmt = t => { const [h, m] = t.split(":").map(Number); const ap = h >= 12 ? "PM" : "AM"; const hr = h > 12 ? h - 12 : h === 0 ? 12 : h; return `${hr}:${String(m).padStart(2, "0")} ${ap}`; };
+        document.getElementById("cf-test").textContent = testName;
+        document.getElementById("cf-date").textContent = dateStr;
+        document.getElementById("cf-time").textContent = `${fmt(start)} – ${fmt(end)}`;
+        document.getElementById("cf-price").textContent = `₹${testPrice} onwards`;
+        box.classList.add("show");
+        btn.disabled = false;
+      } else {
+        box.classList.remove("show");
+        btn.disabled = true;
+      }
+    }
+
+    // Submit
+    const form = document.getElementById("book-form");
+    const btn = document.getElementById("book-btn");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      if (!selectedSlot) return;
+      btn.disabled = true;
+      btn.textContent = "Booking…";
+
+      try {
+        await api.post("/bookings/book", {
+          testId: parseInt(testId),
+          date: datePicker.value,
+          timeSlot: selectedSlot
+        });
+
+        // Show success
+        form.style.display = "none";
+        const overlay = document.getElementById("success-overlay");
+        overlay.classList.add("show");
+
+        const d = new Date(datePicker.value);
+        const dateStr = d.toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+        const [start, end] = selectedSlot.split("-");
+        const fmt = t => { const [h, m] = t.split(":").map(Number); const ap = h >= 12 ? "PM" : "AM"; const hr = h > 12 ? h - 12 : h === 0 ? 12 : h; return `${hr}:${String(m).padStart(2, "0")} ${ap}`; };
+        document.getElementById("success-details").innerHTML = `
+        <div class="confirm-row"><span class="label">Test</span><span class="value">${testName}</span></div>
+        <div class="confirm-row"><span class="label">Date</span><span class="value">${dateStr}</span></div>
+        <div class="confirm-row"><span class="label">Time</span><span class="value">${fmt(start)} – ${fmt(end)}</span></div>
+        <div class="confirm-row"><span class="label">Location</span><span class="value">City Lab, Station Road, Durgapur</span></div>
+      `;
+        showToast("Booking confirmed!", "success");
+      } catch (err) {
+        showToast(err.message || "Booking failed", "error");
+        btn.disabled = false;
+        btn.textContent = "Confirm Booking";
+      }
+    });
+
+    // Load slots for today on page load
+    if (testId) loadSlots();
+  </script>
+</body>
+
+</html>

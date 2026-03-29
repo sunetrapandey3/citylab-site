@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Dashboard — City Lab</title>
+  <meta name="description" content="City Lab admin panel — view and manage all patient bookings."/>
+  <link rel="stylesheet" href="css/style.css"/>
+  <style>
+    .admin-layout {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 32px 5% 80px;
+    }
+
+    /* Summary stats */
+    .admin-stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 36px;
+    }
+    .admin-stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 20px 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      transition: border-color 0.2s;
+    }
+    .admin-stat-card:hover { border-color: var(--border-hover); }
+    .admin-stat-card .stat-icon {
+      width: 48px; height: 48px;
+      border-radius: var(--radius-md);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem;
+      flex-shrink: 0;
+    }
+    .stat-icon.teal   { background: var(--teal-light);           border: 1px solid rgba(0,201,177,0.2); }
+    .stat-icon.yellow { background: rgba(245,158,11,0.1);        border: 1px solid rgba(245,158,11,0.2); }
+    .stat-icon.green  { background: rgba(16,185,129,0.1);        border: 1px solid rgba(16,185,129,0.2); }
+    .stat-icon.red    { background: rgba(239,68,68,0.1);         border: 1px solid rgba(239,68,68,0.2); }
+    .admin-stat-card .stat-val { font-size: 1.6rem; font-weight: 800; line-height: 1; }
+    .admin-stat-card .stat-lbl { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.3px; margin-top: 3px; }
+
+    /* Toolbar */
+    .admin-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+    .filter-pills { display: flex; gap: 8px; flex-wrap: wrap; }
+    .admin-search {
+      position: relative;
+      flex: 1;
+      min-width: 220px;
+      max-width: 340px;
+    }
+    .admin-search .search-icon {
+      position: absolute;
+      left: 14px; top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      pointer-events: none;
+    }
+    .admin-search input { padding-left: 40px; width: 100%; }
+
+    /* Table */
+    .table-wrapper {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+    .admin-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.875rem;
+    }
+    .admin-table thead {
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border);
+    }
+    .admin-table th {
+      text-align: left;
+      padding: 14px 16px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+    .admin-table td {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+    .admin-table tr:last-child td { border-bottom: none; }
+    .admin-table tbody tr {
+      transition: background 0.15s;
+    }
+    .admin-table tbody tr:hover { background: rgba(255,255,255,0.02); }
+    .admin-table tbody tr.cancelled { opacity: 0.55; }
+
+    .patient-cell { display: flex; flex-direction: column; gap: 2px; }
+    .patient-name { font-weight: 600; }
+    .patient-email { font-size: 0.76rem; color: var(--text-muted); }
+
+    .test-cell { display: flex; flex-direction: column; gap: 2px; }
+    .test-name-cell { font-weight: 600; }
+    .test-cat-cell  { font-size: 0.76rem; color: var(--text-muted); }
+
+    .price-cell { font-weight: 700; color: var(--teal); }
+
+    /* Status selector */
+    .status-select {
+      appearance: none;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text-primary);
+      font-size: 0.78rem;
+      font-weight: 600;
+      padding: 6px 28px 6px 10px;
+      cursor: pointer;
+      transition: border-color 0.2s;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 8px center;
+    }
+    .status-select:focus { outline: none; border-color: var(--teal); }
+    .status-select.pending   { border-color: rgba(245,158,11,0.6); color: #f59e0b; }
+    .status-select.confirmed { border-color: rgba(16,185,129,0.6); color: #10b981; }
+    .status-select.cancelled { border-color: rgba(239,68,68,0.4);  color: #ef4444; }
+
+    /* No data */
+    .table-empty {
+      padding: 60px 24px;
+      text-align: center;
+      color: var(--text-muted);
+    }
+    .table-empty .empty-icon { font-size: 2.5rem; margin-bottom: 12px; }
+    .table-empty p { font-size: 0.9rem; }
+
+    /* Pagination */
+    .pagination {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px;
+      border-top: 1px solid var(--border);
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .page-info { font-size: 0.82rem; color: var(--text-muted); }
+    .page-btns { display: flex; gap: 6px; }
+    .page-btn {
+      padding: 6px 12px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--text-secondary);
+      transition: all 0.2s;
+    }
+    .page-btn:hover:not(:disabled) { border-color: var(--teal); color: var(--teal); }
+    .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .page-btn.active { background: var(--teal); border-color: var(--teal); color: #000; }
+
+    /* Admin badge */
+    .admin-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      background: rgba(239,68,68,0.12);
+      border: 1px solid rgba(239,68,68,0.3);
+      border-radius: 99px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #f87171;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    @media (max-width: 900px) {
+      .admin-stats { grid-template-columns: repeat(2, 1fr); }
+      .admin-toolbar { flex-direction: column; align-items: flex-start; }
+      .admin-search { max-width: 100%; }
+      .table-wrapper { overflow-x: auto; }
+      .admin-table { min-width: 750px; }
+    }
+    @media (max-width: 480px) {
+      .admin-stats { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="navbar">
+  <a href="index.html" class="logo">
+    <div class="logo-icon">🧪</div>
+    City <span>Lab</span>
+  </a>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="tests.html">Tests</a>
+    <a href="dashboard.html">My Bookings</a>
+    <a href="admin.html" id="nav-admin" class="active" style="display:none">Admin</a>
+    <span id="nav-username" style="color:var(--text-secondary);font-size:0.875rem;font-weight:500;padding:8px 4px;"></span>
+    <a href="login.html" id="nav-login">Login</a>
+    <a href="register.html" id="nav-register" class="nav-cta">Register</a>
+    <a href="#" id="nav-logout" class="btn btn-ghost btn-sm" style="display:none">Logout</a>
+  </nav>
+</header>
+
+<div class="page-header">
+  <div style="max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+    <div>
+      <h1>Admin Dashboard</h1>
+      <p>Manage all patient bookings at City Lab, Durgapur.</p>
+    </div>
+    <span class="admin-badge">🛡️ Admin Panel</span>
+  </div>
+</div>
+
+<div class="admin-layout">
+
+  <!-- Stats -->
+  <div class="admin-stats">
+    <div class="admin-stat-card">
+      <div class="stat-icon teal">📋</div>
+      <div><div class="stat-val" id="stat-total">—</div><div class="stat-lbl">Total Bookings</div></div>
+    </div>
+    <div class="admin-stat-card">
+      <div class="stat-icon yellow">🕐</div>
+      <div><div class="stat-val" id="stat-pending">—</div><div class="stat-lbl">Pending</div></div>
+    </div>
+    <div class="admin-stat-card">
+      <div class="stat-icon green">✅</div>
+      <div><div class="stat-val" id="stat-confirmed">—</div><div class="stat-lbl">Confirmed</div></div>
+    </div>
+    <div class="admin-stat-card">
+      <div class="stat-icon red">❌</div>
+      <div><div class="stat-val" id="stat-cancelled">—</div><div class="stat-lbl">Cancelled</div></div>
+    </div>
+  </div>
+
+  <!-- Toolbar -->
+  <div class="admin-toolbar">
+    <div class="filter-pills">
+      <button class="category-pill active" data-filter="all">All</button>
+      <button class="category-pill" data-filter="pending">Pending</button>
+      <button class="category-pill" data-filter="confirmed">Confirmed</button>
+      <button class="category-pill" data-filter="cancelled">Cancelled</button>
+    </div>
+    <div class="admin-search">
+      <span class="search-icon">🔍</span>
+      <input class="form-input" type="text" id="search-input" placeholder="Search patient or test…"/>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="table-wrapper">
+    <table class="admin-table" id="admin-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Patient</th>
+          <th>Test</th>
+          <th>Date</th>
+          <th>Time</th>
+          <th>Price</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="table-body">
+        <tr>
+          <td colspan="7">
+            <div class="loading-center" style="padding:40px;">
+              <div class="spinner"></div>
+              <span>Loading bookings…</span>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="pagination" id="pagination" style="display:none;">
+      <span class="page-info" id="page-info"></span>
+      <div class="page-btns" id="page-btns"></div>
+    </div>
+  </div>
+
+</div>
+
+<script type="module">
+  import { api, initNavAuth, isLoggedIn, isAdmin, showToast } from "./js/api.js";
+
+  // Guard: must be logged in AND admin
+  if (!isLoggedIn()) {
+    window.location.href = "login.html";
+  } else if (!isAdmin()) {
+    showToast("Admin access required.", "error");
+    setTimeout(() => window.location.href = "dashboard.html", 1000);
+  }
+
+  initNavAuth();
+
+  const PAGE_SIZE = 15;
+  let allBookings   = [];
+  let filtered      = [];
+  let activeFilter  = "all";
+  let currentPage   = 1;
+
+  async function loadBookings() {
+    try {
+      allBookings = await api.get("/admin/bookings");
+      applyFilter();
+    } catch (err) {
+      document.getElementById("table-body").innerHTML = `
+        <tr><td colspan="7">
+          <div class="table-empty">
+            <div class="empty-icon">⚠️</div>
+            <p>Could not load bookings. Make sure the server is running.</p>
+          </div>
+        </td></tr>`;
+    }
+  }
+
+  function applyFilter() {
+    const search = document.getElementById("search-input").value.toLowerCase();
+    filtered = allBookings;
+    if (activeFilter !== "all") filtered = filtered.filter(b => b.status === activeFilter);
+    if (search) filtered = filtered.filter(b =>
+      b.user_name.toLowerCase().includes(search) ||
+      b.email.toLowerCase().includes(search)     ||
+      b.test_name.toLowerCase().includes(search)
+    );
+    updateStats();
+    currentPage = 1;
+    render();
+  }
+
+  function updateStats() {
+    document.getElementById("stat-total").textContent     = allBookings.length;
+    document.getElementById("stat-pending").textContent   = allBookings.filter(b => b.status === "pending").length;
+    document.getElementById("stat-confirmed").textContent = allBookings.filter(b => b.status === "confirmed").length;
+    document.getElementById("stat-cancelled").textContent = allBookings.filter(b => b.status === "cancelled").length;
+  }
+
+  function fmtDate(dateStr) {
+    const d = new Date(dateStr);
+    return d.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+  }
+
+  function fmtSlot(slot) {
+    const [start, end] = slot.split("-");
+    const fmt = t => {
+      const [h, m] = t.split(":").map(Number);
+      const ap = h >= 12 ? "PM" : "AM";
+      const hr = h > 12 ? h - 12 : h === 0 ? 12 : h;
+      return `${hr}:${String(m).padStart(2,"0")} ${ap}`;
+    };
+    return `${fmt(start)} – ${fmt(end)}`;
+  }
+
+  function render() {
+    const tbody = document.getElementById("table-body");
+    const pagination = document.getElementById("pagination");
+
+    if (filtered.length === 0) {
+      tbody.innerHTML = `
+        <tr><td colspan="7">
+          <div class="table-empty">
+            <div class="empty-icon">📋</div>
+            <p>${activeFilter === "all" ? "No bookings found." : `No ${activeFilter} bookings.`}</p>
+          </div>
+        </td></tr>`;
+      pagination.style.display = "none";
+      return;
+    }
+
+    const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+    currentPage = Math.min(currentPage, totalPages);
+    const start = (currentPage - 1) * PAGE_SIZE;
+    const page  = filtered.slice(start, start + PAGE_SIZE);
+
+    tbody.innerHTML = page.map((b, i) => `
+      <tr class="${b.status === "cancelled" ? "cancelled" : ""}" data-id="${b.id}">
+        <td style="color:var(--text-muted);font-weight:600;">${start + i + 1}</td>
+        <td>
+          <div class="patient-cell">
+            <span class="patient-name">${b.user_name}</span>
+            <span class="patient-email">${b.email}</span>
+          </div>
+        </td>
+        <td>
+          <div class="test-cell">
+            <span class="test-name-cell">${b.test_name}</span>
+            <span class="test-cat-cell">${b.category}</span>
+          </div>
+        </td>
+        <td style="white-space:nowrap;">${fmtDate(b.booking_date)}</td>
+        <td style="white-space:nowrap;font-size:0.82rem;">${fmtSlot(b.time_slot)}</td>
+        <td class="price-cell">₹${b.price}</td>
+        <td>
+          <select class="status-select ${b.status}" data-id="${b.id}" data-current="${b.status}">
+            <option value="pending"   ${b.status === "pending"   ? "selected" : ""}>🕐 Pending</option>
+            <option value="confirmed" ${b.status === "confirmed" ? "selected" : ""}>✅ Confirmed</option>
+            <option value="cancelled" ${b.status === "cancelled" ? "selected" : ""}>❌ Cancelled</option>
+          </select>
+        </td>
+      </tr>
+    `).join("");
+
+    // Status change handlers
+    tbody.querySelectorAll(".status-select").forEach(sel => {
+      sel.addEventListener("change", async () => {
+        const id     = sel.dataset.id;
+        const status = sel.value;
+        const prev   = sel.dataset.current;
+        sel.disabled = true;
+        try {
+          await api.put("/admin/booking-status", { bookingId: parseInt(id), status });
+          // Update in-memory array
+          const booking = allBookings.find(b => String(b.id) === String(id));
+          if (booking) booking.status = status;
+          sel.dataset.current = status;
+          sel.className = `status-select ${status}`;
+          showToast(`Booking #${id} marked as ${status}`, "success");
+          updateStats();
+        } catch (err) {
+          showToast(err.message || "Update failed", "error");
+          sel.value = prev;
+        } finally {
+          sel.disabled = false;
+        }
+      });
+    });
+
+    // Pagination
+    pagination.style.display = "flex";
+    document.getElementById("page-info").textContent =
+      `Showing ${start + 1}–${Math.min(start + PAGE_SIZE, filtered.length)} of ${filtered.length}`;
+
+    const btnsEl = document.getElementById("page-btns");
+    let btns = "";
+    btns += `<button class="page-btn" id="prev-btn" ${currentPage === 1 ? "disabled" : ""}>← Prev</button>`;
+    for (let p = 1; p <= totalPages; p++) {
+      if (totalPages <= 7 || p === 1 || p === totalPages || Math.abs(p - currentPage) <= 1) {
+        btns += `<button class="page-btn ${p === currentPage ? "active" : ""}" data-page="${p}">${p}</button>`;
+      } else if (Math.abs(p - currentPage) === 2) {
+        btns += `<span style="padding:6px 4px;color:var(--text-muted);">…</span>`;
+      }
+    }
+    btns += `<button class="page-btn" id="next-btn" ${currentPage === totalPages ? "disabled" : ""}>Next →</button>`;
+    btnsEl.innerHTML = btns;
+
+    btnsEl.querySelectorAll("[data-page]").forEach(btn => {
+      btn.addEventListener("click", () => { currentPage = parseInt(btn.dataset.page); render(); });
+    });
+    const prevBtn = btnsEl.querySelector("#prev-btn");
+    const nextBtn = btnsEl.querySelector("#next-btn");
+    if (prevBtn) prevBtn.addEventListener("click", () => { currentPage--; render(); });
+    if (nextBtn) nextBtn.addEventListener("click", () => { currentPage++; render(); });
+  }
+
+  // Filter pills
+  document.querySelectorAll(".category-pill").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".category-pill").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      activeFilter = btn.dataset.filter;
+      applyFilter();
+    });
+  });
+
+  // Search
+  document.getElementById("search-input").addEventListener("input", applyFilter);
+
+  loadBookings();
+</script>
+</body>
+</html>

@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>My Bookings — City Lab Durgapur</title>
+  <meta name="description" content="View and manage your City Lab test appointments."/>
+  <link rel="stylesheet" href="css/style.css"/>
+  <style>
+    .dashboard-layout {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 32px 5% 80px;
+    }
+
+    /* Stats row */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 36px;
+    }
+    .stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 20px 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .stat-card .stat-icon {
+      width: 48px; height: 48px;
+      border-radius: var(--radius-md);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem;
+      flex-shrink: 0;
+    }
+    .stat-card .stat-icon.teal    { background: var(--teal-light);             border: 1px solid rgba(0,201,177,0.2); }
+    .stat-card .stat-icon.green   { background: rgba(16,185,129,0.1);           border: 1px solid rgba(16,185,129,0.2); }
+    .stat-card .stat-icon.yellow  { background: rgba(245,158,11,0.1);           border: 1px solid rgba(245,158,11,0.2); }
+    .stat-card .stat-icon.red     { background: rgba(239,68,68,0.1);            border: 1px solid rgba(239,68,68,0.2); }
+    .stat-card .stat-val { font-size: 1.6rem; font-weight: 800; line-height: 1; }
+    .stat-card .stat-lbl { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.3px; margin-top: 3px; }
+
+    /* Welcome bar */
+    .welcome-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 32px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .welcome-bar h1 { font-size: 1.5rem; font-weight: 800; }
+    .welcome-bar h1 span { color: var(--teal); }
+
+    /* Booking cards */
+    .booking-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 20px 24px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      transition: all 0.25s;
+    }
+    .booking-card:hover { border-color: var(--border-hover); }
+    .booking-card.cancelled { opacity: 0.55; }
+
+    .booking-test-icon {
+      width: 52px; height: 52px;
+      background: var(--teal-light);
+      border: 1px solid rgba(0,201,177,0.2);
+      border-radius: var(--radius-md);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem;
+      flex-shrink: 0;
+    }
+    .booking-info { flex: 1; min-width: 0; }
+    .booking-info h3 { font-size: 0.95rem; font-weight: 700; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .booking-meta {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-top: 6px;
+    }
+    .booking-meta-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+    }
+    .booking-actions { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+
+    /* Filters */
+    .filter-bar {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    /* Booking list */
+    .booking-list { display: flex; flex-direction: column; gap: 12px; }
+
+    @media (max-width: 768px) {
+      .stats-row { grid-template-columns: repeat(2, 1fr); }
+      .booking-card { flex-wrap: wrap; }
+      .booking-actions { width: 100%; justify-content: flex-end; }
+    }
+    @media (max-width: 480px) {
+      .stats-row { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="navbar">
+  <a href="index.html" class="logo">
+    <div class="logo-icon">🧪</div>
+    City <span>Lab</span>
+  </a>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="tests.html">Tests</a>
+    <a href="dashboard.html" class="active">My Bookings</a>
+    <a href="admin.html" id="nav-admin" style="display:none">Admin</a>
+    <span id="nav-username" style="color:var(--text-secondary);font-size:0.875rem;font-weight:500;padding:8px 4px;"></span>
+    <a href="login.html" id="nav-login">Login</a>
+    <a href="register.html" id="nav-register" class="nav-cta">Register</a>
+    <a href="#" id="nav-logout" class="btn btn-ghost btn-sm" style="display:none">Logout</a>
+  </nav>
+</header>
+
+<div class="page-header">
+  <div style="max-width:1100px;margin:0 auto;">
+    <h1>My Bookings</h1>
+    <p>View and manage your City Lab appointments.</p>
+  </div>
+</div>
+
+<div class="dashboard-layout">
+  <div class="welcome-bar">
+    <h1>Welcome back, <span id="user-name">—</span> 👋</h1>
+    <a href="tests.html" class="btn btn-primary">+ Book a Test</a>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-row">
+    <div class="stat-card"><div class="stat-icon teal">📋</div><div><div class="stat-val" id="stat-total">0</div><div class="stat-lbl">Total Bookings</div></div></div>
+    <div class="stat-card"><div class="stat-icon yellow">🕐</div><div><div class="stat-val" id="stat-pending">0</div><div class="stat-lbl">Pending</div></div></div>
+    <div class="stat-card"><div class="stat-icon green">✅</div><div><div class="stat-val" id="stat-confirmed">0</div><div class="stat-lbl">Confirmed</div></div></div>
+    <div class="stat-card"><div class="stat-icon red">❌</div><div><div class="stat-val" id="stat-cancelled">0</div><div class="stat-lbl">Cancelled</div></div></div>
+  </div>
+
+  <!-- Filter -->
+  <div class="filter-bar">
+    <button class="category-pill active" data-filter="all">All</button>
+    <button class="category-pill" data-filter="pending">Pending</button>
+    <button class="category-pill" data-filter="confirmed">Confirmed</button>
+    <button class="category-pill" data-filter="cancelled">Cancelled</button>
+  </div>
+
+  <!-- Booking list -->
+  <div class="booking-list" id="booking-list">
+    <div class="loading-center">
+      <div class="spinner"></div>
+      <span>Loading your bookings…</span>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import { api, initNavAuth, isLoggedIn, getUser, showToast } from "./js/api.js";
+
+  if (!isLoggedIn()) window.location.href = "login.html";
+  initNavAuth();
+
+  const user = getUser();
+  document.getElementById("user-name").textContent = user?.name || "User";
+
+  const CAT_ICONS = {
+    "Blood Test": "🩸", "Stool Test": "🔬", "Urine Test": "💧",
+    "Plasma Test": "🧪", "Swab Test": "🩹", "Medical Testing": "❤️",
+  };
+
+  let allBookings = [];
+  let activeFilter = "all";
+
+  async function loadBookings() {
+    try {
+      allBookings = await api.get("/bookings/my-bookings");
+      updateStats();
+      render();
+    } catch {
+      document.getElementById("booking-list").innerHTML =
+        `<div class="empty-state"><div class="empty-icon">⚠️</div><p>Could not load bookings. Make sure the server is running.</p></div>`;
+    }
+  }
+
+  function updateStats() {
+    document.getElementById("stat-total").textContent     = allBookings.length;
+    document.getElementById("stat-pending").textContent   = allBookings.filter(b => b.status === "pending").length;
+    document.getElementById("stat-confirmed").textContent = allBookings.filter(b => b.status === "confirmed").length;
+    document.getElementById("stat-cancelled").textContent = allBookings.filter(b => b.status === "cancelled").length;
+  }
+
+  function render() {
+    const filtered = activeFilter === "all" ? allBookings : allBookings.filter(b => b.status === activeFilter);
+    const list = document.getElementById("booking-list");
+
+    if (filtered.length === 0) {
+      list.innerHTML = `<div class="empty-state">
+        <div class="empty-icon">📋</div>
+        <p>${activeFilter === "all" ? "You have no bookings yet." : `No ${activeFilter} bookings.`}</p>
+        <a href="tests.html" class="btn btn-primary btn-sm" style="margin-top:16px;">Browse Tests</a>
+      </div>`;
+      return;
+    }
+
+    const today = new Date().toISOString().split("T")[0];
+
+    list.innerHTML = filtered.map(b => {
+      const d = new Date(b.booking_date);
+      const dateStr = d.toLocaleDateString("en-IN", { weekday:"short", day:"numeric", month:"short", year:"numeric" });
+      const [start, end] = b.time_slot.split("-");
+      const fmt = t => { const [h,m] = t.split(":").map(Number); const ap = h>=12?"PM":"AM"; const hr = h>12?h-12:h===0?12:h; return `${hr}:${String(m).padStart(2,"0")} ${ap}`; };
+      const timeStr = `${fmt(start)} – ${fmt(end)}`;
+      const icon  = CAT_ICONS[b.category] || "🔬";
+      const isFuture = b.booking_date >= today;
+      const canCancel = b.status !== "cancelled" && isFuture;
+
+      return `
+        <div class="booking-card ${b.status === "cancelled" ? "cancelled" : ""}" data-id="${b.id}">
+          <div class="booking-test-icon">${icon}</div>
+          <div class="booking-info">
+            <h3>${b.test_name}</h3>
+            <div class="badge badge-${b.status}" style="margin-bottom:6px;">${b.status}</div>
+            <div class="booking-meta">
+              <div class="booking-meta-item">📅 ${dateStr}</div>
+              <div class="booking-meta-item">🕐 ${timeStr}</div>
+              <div class="booking-meta-item">💰 ₹${b.price} onwards</div>
+            </div>
+          </div>
+          <div class="booking-actions">
+            ${canCancel ? `<button class="btn btn-danger btn-sm cancel-btn" data-id="${b.id}">Cancel</button>` : ""}
+          </div>
+        </div>`;
+    }).join("");
+
+    // Cancel handlers
+    list.querySelectorAll(".cancel-btn").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const id = btn.dataset.id;
+        if (!confirm("Cancel this booking?")) return;
+        btn.disabled = true;
+        btn.textContent = "Cancelling…";
+        try {
+          await api.delete(`/bookings/${id}`);
+          showToast("Booking cancelled.", "info");
+          await loadBookings();
+        } catch (err) {
+          showToast(err.message || "Failed to cancel", "error");
+          btn.disabled = false;
+          btn.textContent = "Cancel";
+        }
+      });
+    });
+  }
+
+  // Filter buttons
+  document.querySelector(".filter-bar").addEventListener("click", (e) => {
+    const btn = e.target.closest(".category-pill");
+    if (!btn) return;
+    document.querySelectorAll(".category-pill").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    activeFilter = btn.dataset.filter;
+    render();
+  });
+
+  loadBookings();
+</script>
+</body>
+</html>

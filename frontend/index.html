@@ -1,10 +1,842 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>CityLab</title>
-  </head>
-  <body>
-    <h1>CityLab Diagnostics</h1>
-    <p>Online lab test booking platform.</p>
-  </body>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>City Lab — Modern Diagnostics in Durgapur</title>
+  <meta name="description"
+    content="City Lab, Station Road Durgapur — 21 years of trusted diagnostics. Book blood tests, urine tests, ECG and more online with instant time slot scheduling." />
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    /* ── Hero ── */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      padding: 0 5%;
+      padding-top: var(--nav-height);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 60% 40%, rgba(0, 201, 177, 0.08) 0%, transparent 70%),
+        radial-gradient(ellipse 50% 50% at 10% 80%, rgba(0, 100, 200, 0.06) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 60px;
+      align-items: center;
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      background: var(--teal-light);
+      border: 1px solid rgba(0, 201, 177, 0.25);
+      border-radius: 99px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--teal);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 24px;
+    }
+
+    .hero h1 {
+      font-size: 3.2rem;
+      font-weight: 900;
+      line-height: 1.1;
+      letter-spacing: -1.5px;
+      margin-bottom: 20px;
+    }
+
+    .hero h1 span {
+      background: linear-gradient(135deg, var(--teal), #6ee7f7);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-desc {
+      color: var(--text-secondary);
+      font-size: 1.05rem;
+      line-height: 1.7;
+      margin-bottom: 36px;
+      max-width: 480px;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-bottom: 40px;
+    }
+
+    .hero-trust {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+    }
+
+    .trust-item {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .trust-num {
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: var(--teal);
+      line-height: 1;
+    }
+
+    .trust-label {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .trust-divider {
+      width: 1px;
+      height: 36px;
+      background: var(--border);
+    }
+
+    /* ── Hero Visual ── */
+    .hero-visual {
+      position: relative;
+    }
+
+    .hero-card-main {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      padding: 32px;
+      backdrop-filter: blur(20px);
+      box-shadow: var(--shadow-card), var(--shadow-glow);
+    }
+
+    .hero-card-main .card-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+
+    .lab-avatar {
+      width: 52px;
+      height: 52px;
+      background: linear-gradient(135deg, var(--teal), var(--teal-dark));
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+    }
+
+    .hero-stat-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .hero-stat {
+      background: rgba(0, 201, 177, 0.06);
+      border: 1px solid rgba(0, 201, 177, 0.12);
+      border-radius: var(--radius-md);
+      padding: 14px;
+      text-align: center;
+    }
+
+    .hero-stat .num {
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: var(--teal);
+    }
+
+    .hero-stat .lbl {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .hero-slot-preview {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .slot-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      background: var(--bg-card-hover);
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+    }
+
+    .slot-row .slot-time {
+      font-size: 0.82rem;
+      font-weight: 600;
+    }
+
+    .slot-row .slot-avail {
+      font-size: 0.72rem;
+    }
+
+    /* floating badges */
+    .float-badge {
+      position: absolute;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      backdrop-filter: blur(12px);
+      border-radius: var(--radius-md);
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      box-shadow: var(--shadow-card);
+      animation: float 4s ease-in-out infinite;
+    }
+
+    .float-badge.fb1 {
+      top: -20px;
+      right: -30px;
+    }
+
+    .float-badge.fb2 {
+      bottom: 40px;
+      left: -40px;
+      animation-delay: 2s;
+    }
+
+    @keyframes float {
+
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+
+      50% {
+        transform: translateY(-8px);
+      }
+    }
+
+    /* ── Stats bar ── */
+    .stats-bar {
+      background: var(--bg-secondary);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      padding: 28px 5%;
+    }
+
+    .stats-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 24px;
+    }
+
+    .stat-item {
+      text-align: center;
+    }
+
+    .stat-item .big {
+      font-size: 2rem;
+      font-weight: 900;
+      letter-spacing: -1px;
+    }
+
+    .stat-item .big span {
+      color: var(--teal);
+    }
+
+    .stat-item .lbl {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 2px;
+    }
+
+    /* ── Category Cards ── */
+    .categories-section {
+      padding: 80px 5%;
+    }
+
+    .categories-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .cat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 16px;
+    }
+
+    .cat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 24px 16px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.25s;
+      text-decoration: none;
+      display: block;
+    }
+
+    .cat-card:hover {
+      border-color: var(--teal);
+      background: var(--teal-light);
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-glow);
+    }
+
+    .cat-card .cat-icon {
+      font-size: 2rem;
+      margin-bottom: 12px;
+    }
+
+    .cat-card .cat-name {
+      font-size: 0.85rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .cat-card .cat-count {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+
+    /* ── How it Works ── */
+    .how-section {
+      padding: 80px 5%;
+      background: var(--bg-secondary);
+    }
+
+    .how-inner {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .how-steps {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 32px;
+      position: relative;
+    }
+
+    .how-steps::before {
+      content: "";
+      position: absolute;
+      top: 28px;
+      left: calc(16.66% + 20px);
+      right: calc(16.66% + 20px);
+      height: 2px;
+      background: linear-gradient(90deg, var(--teal), transparent, var(--teal));
+      opacity: 0.3;
+    }
+
+    .how-step {
+      text-align: center;
+    }
+
+    .step-num {
+      width: 56px;
+      height: 56px;
+      background: linear-gradient(135deg, var(--teal), var(--teal-dark));
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      font-weight: 900;
+      color: #000;
+      margin: 0 auto 20px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .step-title {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .step-desc {
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    /* ── Tests Preview ── */
+    .tests-preview {
+      padding: 80px 5%;
+    }
+
+    .tests-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .test-preview-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      transition: all 0.3s;
+    }
+
+    .test-preview-card:hover {
+      border-color: var(--border-hover);
+      box-shadow: var(--shadow-glow);
+      transform: translateY(-3px);
+    }
+
+    .test-cat-tag {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 10px;
+      background: var(--teal-light);
+      color: var(--teal);
+      font-size: 0.72rem;
+      font-weight: 700;
+      border-radius: 99px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      width: fit-content;
+    }
+
+    .test-preview-card h3 {
+      font-size: 1rem;
+      font-weight: 700;
+    }
+
+    .test-preview-card p {
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+      flex: 1;
+    }
+
+    .test-card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: auto;
+    }
+
+    /* ── CTA Banner ── */
+    .cta-section {
+      padding: 80px 5%;
+    }
+
+    .cta-banner {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: linear-gradient(135deg, rgba(0, 201, 177, 0.12), rgba(0, 150, 130, 0.06));
+      border: 1px solid rgba(0, 201, 177, 0.25);
+      border-radius: var(--radius-xl);
+      padding: 60px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .cta-banner::before {
+      content: "";
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(0, 201, 177, 0.05) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    .cta-banner h2 {
+      font-size: 2.2rem;
+      font-weight: 900;
+      letter-spacing: -0.5px;
+      margin-bottom: 12px;
+    }
+
+    .cta-banner p {
+      color: var(--text-secondary);
+      font-size: 1rem;
+      margin-bottom: 32px;
+    }
+
+    .cta-actions {
+      display: flex;
+      gap: 14px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    /* responsive */
+    @media (max-width: 900px) {
+      .hero-grid {
+        grid-template-columns: 1fr;
+        text-align: center;
+      }
+
+      .hero-visual {
+        display: none;
+      }
+
+      .hero h1 {
+        font-size: 2.4rem;
+      }
+
+      .hero-actions {
+        justify-content: center;
+      }
+
+      .hero-trust {
+        justify-content: center;
+      }
+
+      .how-steps {
+        grid-template-columns: 1fr;
+      }
+
+      .how-steps::before {
+        display: none;
+      }
+
+      .cta-banner {
+        padding: 40px 24px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ─── Navbar ─────────────────────────────────────────────── -->
+  <header class="navbar">
+    <a href="index.html" class="logo">
+      <div class="logo-icon">🧪</div>
+      City <span>Lab</span>
+    </a>
+    <nav>
+      <a href="index.html" class="active">Home</a>
+      <a href="tests.html">Tests</a>
+      <a href="dashboard.html">My Bookings</a>
+      <a href="admin.html" id="nav-admin" style="display:none">Admin</a>
+      <span id="nav-username"
+        style="color:var(--text-secondary);font-size:0.875rem;font-weight:500;padding:8px 4px;"></span>
+      <a href="login.html" id="nav-login">Login</a>
+      <a href="register.html" id="nav-register" class="nav-cta">Register</a>
+      <a href="#" id="nav-logout" class="btn btn-ghost btn-sm" style="display:none">Logout</a>
+    </nav>
+  </header>
+
+  <!-- ─── Hero ───────────────────────────────────────────────── -->
+  <section class="hero">
+    <div class="hero-grid">
+      <div class="animate-fade-up">
+        <div class="hero-eyebrow">⭐ 4.4 Rated · 21 Years in Healthcare</div>
+        <h1>Modern Diagnostics,<br /><span>Trusted Results</span></h1>
+        <p class="hero-desc">
+          City Lab, Durgapur — book blood tests, urine tests, thyroid panels, ECG
+          and more online. Choose your date and time slot, show up at the lab.
+        </p>
+        <div class="hero-actions">
+          <a href="tests.html" class="btn btn-primary btn-lg">Browse Tests</a>
+          <a href="register.html" class="btn btn-outline btn-lg">Get Started Free</a>
+        </div>
+        <div class="hero-trust">
+          <div class="trust-item">
+            <span class="trust-num">21+</span>
+            <span class="trust-label">Years Experience</span>
+          </div>
+          <div class="trust-divider"></div>
+          <div class="trust-item">
+            <span class="trust-num">4.4★</span>
+            <span class="trust-label">Justdial Rating</span>
+          </div>
+          <div class="trust-divider"></div>
+          <div class="trust-item">
+            <span class="trust-num">20+</span>
+            <span class="trust-label">Tests Available</span>
+          </div>
+          <div class="trust-divider"></div>
+          <div class="trust-item">
+            <span class="trust-num">10PM</span>
+            <span class="trust-label">Open Until</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-visual animate-fade-up delay-2">
+        <div class="hero-card-main">
+          <div class="card-header">
+            <div class="lab-avatar">🧬</div>
+            <div>
+              <div style="font-weight:700;font-size:1rem;">City Lab</div>
+              <div style="font-size:0.78rem;color:var(--text-muted);">Station Road, Durgapur</div>
+              <div style="font-size:0.72rem;color:var(--success);margin-top:2px;">● Open until 10:00 PM</div>
+            </div>
+          </div>
+          <div class="hero-stat-row">
+            <div class="hero-stat">
+              <div class="num">₹80</div>
+              <div class="lbl">Tests From</div>
+            </div>
+            <div class="hero-stat">
+              <div class="num">20</div>
+              <div class="lbl">Available Times</div>
+            </div>
+            <div class="hero-stat">
+              <div class="num">~15</div>
+              <div class="lbl">Min Wait</div>
+            </div>
+          </div>
+          <div class="hero-slot-preview">
+            <div
+              style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);margin-bottom:4px;">
+              Today's Slots</div>
+            <div class="slot-row"><span class="slot-time">9:00 AM</span><span
+                class="badge badge-confirmed slot-avail">Available</span></div>
+            <div class="slot-row"><span class="slot-time">10:30 AM</span><span
+                class="badge badge-confirmed slot-avail">Available</span></div>
+            <div class="slot-row"><span class="slot-time">11:00 AM</span><span class="badge badge-pending slot-avail">2
+                left</span></div>
+            <div class="slot-row"><span class="slot-time">2:00 PM</span><span
+                class="badge badge-confirmed slot-avail">Available</span></div>
+          </div>
+        </div>
+        <div class="float-badge fb1">🔬 <span>Results ready <strong>same day</strong></span></div>
+        <div class="float-badge fb2">✅ <span>Confirmed in <strong>seconds</strong></span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── Stats Bar ───────────────────────────────────────────── -->
+  <div class="stats-bar">
+    <div class="stats-inner">
+      <div class="stat-item">
+        <div class="big">2<span>1</span>+</div>
+        <div class="lbl">Years of Healthcare</div>
+      </div>
+      <div class="stat-item">
+        <div class="big"><span>6</span></div>
+        <div class="lbl">Test Categories</div>
+      </div>
+      <div class="stat-item">
+        <div class="big"><span>20</span>+</div>
+        <div class="lbl">Lab Tests Available</div>
+      </div>
+      <div class="stat-item">
+        <div class="big"><span>4.4</span>★</div>
+        <div class="lbl">Justdial Rating</div>
+      </div>
+      <div class="stat-item">
+        <div class="big">₹<span>80</span></div>
+        <div class="lbl">Starting Price</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── Test Categories ─────────────────────────────────────── -->
+  <section class="categories-section">
+    <div class="categories-inner">
+      <div class="section-header">
+        <h2 class="section-title">Browse by Category</h2>
+        <p class="section-sub">All major diagnostic categories available at City Lab.</p>
+      </div>
+      <div class="cat-grid">
+        <a href="tests.html?cat=Blood+Test" class="cat-card">
+          <div class="cat-icon">🩸</div>
+          <div class="cat-name">Blood Tests</div>
+          <div class="cat-count">4 tests</div>
+        </a>
+        <a href="tests.html?cat=Stool+Test" class="cat-card">
+          <div class="cat-icon">🔬</div>
+          <div class="cat-name">Stool Tests</div>
+          <div class="cat-count">5 tests</div>
+        </a>
+        <a href="tests.html?cat=Urine+Test" class="cat-card">
+          <div class="cat-icon">💧</div>
+          <div class="cat-name">Urine Tests</div>
+          <div class="cat-count">5 tests</div>
+        </a>
+        <a href="tests.html?cat=Plasma+Test" class="cat-card">
+          <div class="cat-icon">🧪</div>
+          <div class="cat-name">Plasma Tests</div>
+          <div class="cat-count">5 tests</div>
+        </a>
+        <a href="tests.html?cat=Swab+Test" class="cat-card">
+          <div class="cat-icon">🩹</div>
+          <div class="cat-name">Swab Tests</div>
+          <div class="cat-count">3 tests</div>
+        </a>
+        <a href="tests.html?cat=Medical+Testing" class="cat-card">
+          <div class="cat-icon">❤️</div>
+          <div class="cat-name">Medical Testing</div>
+          <div class="cat-count">2 tests</div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── How It Works ───────────────────────────────────────── -->
+  <section class="how-section">
+    <div class="how-inner">
+      <div class="section-header" style="text-align:center;">
+        <h2 class="section-title">How It Works</h2>
+        <p class="section-sub">Book your lab test in under 2 minutes.</p>
+      </div>
+      <div class="how-steps">
+        <div class="how-step animate-fade-up delay-1">
+          <div class="step-num">1</div>
+          <div class="step-title">Create Account</div>
+          <p class="step-desc">Sign up with your name and email. It's free and takes 30 seconds.</p>
+        </div>
+        <div class="how-step animate-fade-up delay-2">
+          <div class="step-num">2</div>
+          <div class="step-title">Pick a Test</div>
+          <p class="step-desc">Browse our catalog and choose from 20+ diagnostic tests across 6 categories.</p>
+        </div>
+        <div class="how-step animate-fade-up delay-3">
+          <div class="step-num">3</div>
+          <div class="step-title">Book Your Slot</div>
+          <p class="step-desc">Select a date and available 30-minute time slot. Confirmation is instant.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── Featured Tests ──────────────────────────────────────── -->
+  <section class="tests-preview">
+    <div class="tests-inner">
+      <div class="section-header flex-between" style="margin-bottom:32px;">
+        <div>
+          <h2 class="section-title">Popular Tests</h2>
+          <p class="section-sub" style="margin-bottom:0;">Most booked diagnostic tests at City Lab.</p>
+        </div>
+        <a href="tests.html" class="btn btn-outline">View All Tests</a>
+      </div>
+      <div class="grid-4" id="featured-tests">
+        <!-- Loaded by JS -->
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── CTA ─────────────────────────────────────────────────── -->
+  <section class="cta-section">
+    <div class="cta-banner">
+      <h2>Ready to book your test?</h2>
+      <p>Register now and schedule your appointment at City Lab, Durgapur.</p>
+      <div class="cta-actions">
+        <a href="register.html" class="btn btn-primary btn-lg">Create Free Account</a>
+        <a href="tests.html" class="btn btn-ghost btn-lg">Browse Tests</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── Footer ──────────────────────────────────────────────── -->
+  <footer>
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="logo"
+          style="font-size:1.2rem;font-weight:800;margin-bottom:12px;display:flex;align-items:center;gap:8px;">
+          <span style="font-size:1.2rem;">🧪</span> City Lab
+        </div>
+        <p>Trusted diagnostics at Station Road, Durgapur since 2005. Serving the community with accurate, affordable lab
+          tests for over 21 years.</p>
+        <p style="margin-top:12px;font-size:0.78rem;color:var(--text-muted);">📍 Nandan Market, Near Durgapur Railway
+          Station,<br />Dr. B.C. Roy Avenue Road, Station Road, Durgapur-713201, WB</p>
+      </div>
+      <div class="footer-links">
+        <h4>Quick Links</h4>
+        <ul>
+          <li><a href="tests.html">All Lab Tests</a></li>
+          <li><a href="tests.html?cat=Blood+Test">Blood Tests</a></li>
+          <li><a href="tests.html?cat=Urine+Test">Urine Tests</a></li>
+          <li><a href="tests.html?cat=Medical+Testing">Medical Testing</a></li>
+        </ul>
+      </div>
+      <div class="footer-links">
+        <h4>Account</h4>
+        <ul>
+          <li><a href="register.html">Register</a></li>
+          <li><a href="login.html">Login</a></li>
+          <li><a href="dashboard.html">My Bookings</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2025 City Lab, Durgapur. Open Monday–Sunday until 10:00 PM.</p>
+    </div>
+  </footer>
+
+  <script type="module">
+    import { initNavAuth, api } from "./js/api.js";
+    initNavAuth();
+
+    const featured = [
+      { name: "CBC Test", category: "Blood Test", price: 200, desc: "Complete blood count to evaluate overall health and detect anemia, infection, and leukemia." },
+      { name: "Malaria Test", category: "Blood Test", price: 200, desc: "Detects malaria parasites in blood. Essential for early-stage diagnosis and effective treatment." },
+      { name: "Thyroid Profile", category: "Blood Test", price: 400, desc: "Measures T3, T4 and TSH levels to diagnose thyroid disorders and monitor treatment." },
+      { name: "HbA1c", category: "Plasma Test", price: 300, desc: "Average blood glucose over 3 months — the gold standard for managing diabetes." },
+      { name: "Urine Routine", category: "Urine Test", price: 80, desc: "Physical, chemical, and microscopic urinalysis for UTI, kidney disease, and diabetes." },
+      { name: "Nasal Swab (COVID)", category: "Swab Test", price: 350, desc: "Rapid antigen or RT-PCR testing for COVID-19, influenza A/B, and RSV." },
+      { name: "Lipid Profile", category: "Blood Test", price: 350, desc: "Measures cholesterol and triglycerides to assess cardiovascular risk." },
+      { name: "ECG", category: "Medical Testing", price: 200, desc: "Non-invasive heart electrical activity recording. Detects arrhythmias and cardiac conditions." },
+    ];
+
+    const container = document.getElementById("featured-tests");
+    container.innerHTML = featured.map(t => `
+    <div class="test-preview-card">
+      <span class="test-cat-tag">${t.category}</span>
+      <h3>${t.name}</h3>
+      <p>${t.desc}</p>
+      <div class="test-card-footer">
+        <div class="price-tag">
+          <span class="currency">₹</span>
+          <span class="amount">${t.price}</span>
+          <span class="onwards">onwards</span>
+        </div>
+        <a href="tests.html" class="btn btn-outline btn-sm">Book</a>
+      </div>
+    </div>
+  `).join("");
+  </script>
+</body>
+
 </html>

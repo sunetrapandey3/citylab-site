@@ -6,7 +6,7 @@ const {
   updateBookingStatus
 } = require("../controllers/adminBookingController");
 
-router.get("/bookings", auth, getAllBookings);
-router.put("/booking-status", auth, updateBookingStatus);
+router.get("/bookings", auth.adminOnly, getAllBookings);
+router.put("/booking-status", auth.adminOnly, updateBookingStatus);
 
 module.exports = router;

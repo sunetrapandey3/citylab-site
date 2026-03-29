@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Lab Tests — City Lab Durgapur</title>
+  <meta name="description" content="Browse all lab tests at City Lab, Durgapur — blood tests, urine tests, plasma, swab, stool and medical testing. Book a time slot online."/>
+  <link rel="stylesheet" href="css/style.css"/>
+  <style>
+    .tests-layout {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      gap: 32px;
+      padding: 32px 5% 80px;
+      max-width: 1300px;
+      margin: 0 auto;
+    }
+    /* Sidebar */
+    .sidebar {
+      position: sticky;
+      top: calc(var(--nav-height) + 20px);
+      align-self: start;
+    }
+    .sidebar-title {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+    .sidebar-cats {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .cat-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 0.875rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      color: var(--text-secondary);
+      border: 1px solid transparent;
+    }
+    .cat-item:hover { background: var(--bg-card); color: var(--text-primary); }
+    .cat-item.active {
+      background: var(--teal-light);
+      color: var(--teal);
+      border-color: rgba(0,201,177,0.2);
+      font-weight: 600;
+    }
+    .cat-item .cat-badge {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      padding: 2px 7px;
+      border-radius: 99px;
+      font-size: 0.7rem;
+      font-weight: 600;
+    }
+    .cat-item.active .cat-badge {
+      background: rgba(0,201,177,0.15);
+      border-color: rgba(0,201,177,0.25);
+    }
+
+    /* Search */
+    .search-bar {
+      position: relative;
+      margin-bottom: 24px;
+    }
+    .search-bar input {
+      padding-left: 42px;
+    }
+    .search-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      font-size: 1rem;
+      pointer-events: none;
+    }
+
+    /* Results Header */
+    .results-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .results-count {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+    }
+    .results-count strong { color: var(--text-primary); }
+
+    /* Test Cards */
+    .test-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      transition: all 0.3s;
+      cursor: default;
+    }
+    .test-card:hover {
+      border-color: var(--border-hover);
+      box-shadow: var(--shadow-glow);
+      transform: translateY(-3px);
+    }
+    .test-card-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .test-card-top h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      line-height: 1.3;
+    }
+    .test-icon {
+      width: 44px; height: 44px;
+      border-radius: var(--radius-md);
+      background: var(--teal-light);
+      border: 1px solid rgba(0,201,177,0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      flex-shrink: 0;
+    }
+    .test-desc {
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+      line-height: 1.7;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .test-card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: auto;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+    }
+
+    /* No results */
+    .no-results { grid-column: 1/-1; }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      .tests-layout { grid-template-columns: 1fr; }
+      .sidebar { position: static; }
+      .sidebar-cats { flex-direction: row; flex-wrap: wrap; }
+      .cat-item { padding: 7px 12px; font-size: 0.8rem; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="navbar">
+  <a href="index.html" class="logo">
+    <div class="logo-icon">🧪</div>
+    City <span>Lab</span>
+  </a>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="tests.html" class="active">Tests</a>
+    <a href="dashboard.html">My Bookings</a>
+    <a href="admin.html" id="nav-admin" style="display:none">Admin</a>
+    <span id="nav-username" style="color:var(--text-secondary);font-size:0.875rem;font-weight:500;padding:8px 4px;"></span>
+    <a href="login.html" id="nav-login">Login</a>
+    <a href="register.html" id="nav-register" class="nav-cta">Register</a>
+    <a href="#" id="nav-logout" class="btn btn-ghost btn-sm" style="display:none">Logout</a>
+  </nav>
+</header>
+
+<div class="page-header">
+  <div style="max-width:1300px;margin:0 auto;">
+    <h1>Lab Tests</h1>
+    <p>Browse and book from 20+ diagnostic tests available at City Lab, Durgapur.</p>
+  </div>
+</div>
+
+<div class="tests-layout">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-title">Filter by Category</div>
+    <div class="sidebar-cats" id="cat-list">
+      <div class="cat-item active" data-cat="all">
+        <span>🔬 All Tests</span>
+        <span class="cat-badge" id="count-all">—</span>
+      </div>
+      <div class="cat-item" data-cat="Blood Test">
+        <span>🩸 Blood Tests</span>
+        <span class="cat-badge" id="count-blood">—</span>
+      </div>
+      <div class="cat-item" data-cat="Stool Test">
+        <span>🔬 Stool Tests</span>
+        <span class="cat-badge" id="count-stool">—</span>
+      </div>
+      <div class="cat-item" data-cat="Urine Test">
+        <span>💧 Urine Tests</span>
+        <span class="cat-badge" id="count-urine">—</span>
+      </div>
+      <div class="cat-item" data-cat="Plasma Test">
+        <span>🧪 Plasma Tests</span>
+        <span class="cat-badge" id="count-plasma">—</span>
+      </div>
+      <div class="cat-item" data-cat="Swab Test">
+        <span>🩹 Swab Tests</span>
+        <span class="cat-badge" id="count-swab">—</span>
+      </div>
+      <div class="cat-item" data-cat="Medical Testing">
+        <span>❤️ Medical Testing</span>
+        <span class="cat-badge" id="count-medical">—</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main>
+    <!-- Search -->
+    <div class="search-bar">
+      <span class="search-icon">🔍</span>
+      <input class="form-input" type="text" id="search-input" placeholder="Search tests by name…"/>
+    </div>
+
+    <div class="results-header">
+      <span class="results-count" id="results-count">Loading…</span>
+    </div>
+
+    <div class="grid-auto" id="tests-grid">
+      <div class="loading-center" style="grid-column:1/-1">
+        <div class="spinner"></div>
+        <span>Loading tests…</span>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script type="module">
+  import { initNavAuth, api, isLoggedIn, showToast } from "./js/api.js";
+  initNavAuth();
+
+  const CAT_ICONS = {
+    "Blood Test":      "🩸",
+    "Stool Test":      "🔬",
+    "Urine Test":      "💧",
+    "Plasma Test":     "🧪",
+    "Swab Test":       "🩹",
+    "Medical Testing": "❤️",
+  };
+
+  let allTests = [];
+  let activeCategory = "all";
+
+  // Check URL param
+  const urlCat = new URLSearchParams(location.search).get("cat");
+  if (urlCat) activeCategory = urlCat;
+
+  async function loadTests() {
+    try {
+      allTests = await api.get("/tests");
+      updateCounts();
+      render();
+    } catch {
+      document.getElementById("tests-grid").innerHTML =
+        `<div class="empty-state no-results"><div class="empty-icon">⚠️</div><p>Could not load tests. Please make sure the server is running.</p></div>`;
+    }
+  }
+
+  function updateCounts() {
+    document.getElementById("count-all").textContent = allTests.length;
+    const cats = {
+      "Blood Test": "blood", "Stool Test": "stool",
+      "Urine Test": "urine", "Plasma Test": "plasma",
+      "Swab Test": "swab",   "Medical Testing": "medical"
+    };
+    for (const [cat, key] of Object.entries(cats)) {
+      const el = document.getElementById(`count-${key}`);
+      if (el) el.textContent = allTests.filter(t => t.category === cat).length;
+    }
+  }
+
+  function render() {
+    const search = document.getElementById("search-input").value.toLowerCase();
+    let filtered = allTests;
+    if (activeCategory !== "all") filtered = filtered.filter(t => t.category === activeCategory);
+    if (search) filtered = filtered.filter(t =>
+      t.name.toLowerCase().includes(search) ||
+      (t.description || "").toLowerCase().includes(search)
+    );
+
+    const countEl = document.getElementById("results-count");
+    countEl.innerHTML = `Showing <strong>${filtered.length}</strong> test${filtered.length !== 1 ? "s" : ""}`;
+
+    const grid = document.getElementById("tests-grid");
+    if (filtered.length === 0) {
+      grid.innerHTML = `<div class="empty-state no-results"><div class="empty-icon">🔍</div><p>No tests found. Try a different search or category.</p></div>`;
+      return;
+    }
+
+    grid.innerHTML = filtered.map(t => `
+      <div class="test-card">
+        <div class="test-card-top">
+          <div>
+            <div class="test-cat-tag" style="display:inline-flex;align-items:center;padding:3px 10px;background:var(--teal-light);color:var(--teal);font-size:0.72rem;font-weight:700;border-radius:99px;margin-bottom:8px;">${t.category}</div>
+            <h3>${t.name}</h3>
+          </div>
+          <div class="test-icon">${CAT_ICONS[t.category] || "🔬"}</div>
+        </div>
+        <p class="test-desc">${t.description || "Reliable diagnostic test at City Lab, Durgapur."}</p>
+        <div class="test-card-footer">
+          <div class="price-tag">
+            <span class="currency">₹</span>
+            <span class="amount">${t.price}</span>
+            <span class="onwards">onwards / test</span>
+          </div>
+          <a href="book.html?testId=${t.id}&name=${encodeURIComponent(t.name)}&price=${t.price}&cat=${encodeURIComponent(t.category)}"
+             class="btn btn-primary btn-sm">Book Slot →</a>
+        </div>
+      </div>
+    `).join("");
+  }
+
+  // Category filter clicks
+  document.getElementById("cat-list").addEventListener("click", (e) => {
+    const item = e.target.closest(".cat-item");
+    if (!item) return;
+    document.querySelectorAll(".cat-item").forEach(el => el.classList.remove("active"));
+    item.classList.add("active");
+    activeCategory = item.dataset.cat;
+    history.replaceState(null, "", activeCategory !== "all" ? `?cat=${encodeURIComponent(activeCategory)}` : location.pathname);
+    render();
+  });
+
+  // Search
+  document.getElementById("search-input").addEventListener("input", render);
+
+  // Pre-select category from URL
+  if (urlCat) {
+    document.querySelectorAll(".cat-item").forEach(el => {
+      el.classList.toggle("active", el.dataset.cat === urlCat);
+    });
+  }
+
+  loadTests();
+</script>
+</body>
+</html>
